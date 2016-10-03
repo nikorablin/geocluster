@@ -63,7 +63,7 @@ module Geocluster
         # Get select hash with the most occurences in cluster and add to all top coordinates in clusters
         # Calculating the geographic center is needed because Geohash.decode returns a geo-square
         top_hash = select_hashes_with_counts.sort_by{ |hash| hash.values.first }.reverse.first.keys.first
-        coordinates_with_counts << { :coordinates => Geocoder::Calculations.geographic_center(GeoHash.decode(top_hash)), :count => cluster.last }
+        coordinates_with_counts << { :coordinates => Geocoder::Calculations.geographic_center(GeoHash.decode(top_hash)), :count => cluster.last, :geohash => cluster.first }
       end
     else
       clusters.each do |cluster|
@@ -76,7 +76,7 @@ module Geocluster
         # Calculate geographical center of all coordinates in this cluster and assign to array of all centers
         # Calculating the geographic center is needed because Geohash.decode returns a geo-square
         centered_coordinates_pair = Geocoder::Calculations.geographic_center(select_coordinates)
-        coordinates_with_counts << { :coordinates => centered_coordinates_pair, :count => cluster.last }
+        coordinates_with_counts << { :coordinates => centered_coordinates_pair, :count => cluster.last, :geohash => cluster.first }
       end
     end
 
