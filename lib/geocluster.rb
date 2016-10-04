@@ -18,16 +18,9 @@ module Geocluster
     }.merge!(options)
     
     geohashes = coordinates.map{ |c| GeoHash.encode(c.first, c.last, 24) }
-    
-    # Convert coordinates into geohashes to easily find neighboring coordinates
-    geohashes = coordinates.map{ |c| GeoHash.encode(c.first, c.last, 24) }
-    # ["u33dc0cpnnf4", "u281zd9xrtww", "u1hcy2ukdhpb", "u1hg6jsr0znd", "u33616p4rb8v", "u0vug9dwefde", "u0yjjd6jk0yv"] 
 
-    # Get stripped to first {precision} chars and unique
-    # coordinates; these are the keys for a temporary hash
     cut_hashes = geohashes.map{ |h| h[0..options[:precision] - 1]}
     keys = cut_hashes.uniq
-    # ["u33", "u28", "u1h", "u0v", "u0y"]
 
     # Get occurences count for keys
     values = keys.map{ |h| cut_hashes.count(h)}
