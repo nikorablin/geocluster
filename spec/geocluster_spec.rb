@@ -24,7 +24,7 @@ describe Geocluster do
     
     specify 'Return hash with geohash as key' do
       clusters = Geocluster.cluster_coordinates_hash([[52.5200065, 13.404954], [52.5094156, 13.4533962], [52.3941887, 13.072691]], :nucleus => false)
-      clusters.should eq({ :u33 => {:coordinates=>[52.3941887, 13.072691000000003], :count=>3, :geohash => 'u33'}})
+      clusters.should eq({:u33=>{:coordinates=>[52.474657748317775, 13.310132265262823], :count=>3, :geohash=>"u33"}})
     end
     
   end

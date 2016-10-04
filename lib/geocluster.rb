@@ -42,14 +42,14 @@ module Geocluster
     clusters.each do |cluster|
       # Select geohashes from cluster matching the first {precision} chars
       select_hashes = geohashes.select{ |g| g[0..options[:precision] - 1] == cluster.first }
-      
-      # Get array of associations between select hash and no. of occurences of that select hash in cluster
-      select_hashes_with_counts = select_hashes.map{ |s| { "#{s}" => select_hashes.count(s) } }
 
-      # Get select hash with the most occurences in cluster and add to all top coordinates in clusters
+      # Transform geohashes into coordinates
+      select_coordinates = select_hashes.map{ |s| Geocoder::Calculations.geographic_center(GeoHash.decode(s)) }
+
+      # Calculate geographical center of all coordinates in this cluster and assign to array of all centers
       # Calculating the geographic center is needed because Geohash.decode returns a geo-square
-      top_hash = select_hashes_with_counts.sort_by{ |hash| hash.values.first }.reverse.first.keys.first
-      coordinates_with_counts[cluster.first.to_sym] = { :coordinates => Geocoder::Calculations.geographic_center(GeoHash.decode(top_hash)), :count => cluster.last, :geohash => cluster.first }
+      centered_coordinates_pair = Geocoder::Calculations.geographic_center(select_coordinates)
+      coordinates_with_counts[cluster.first.to_sym] = { :coordinates => centered_coordinates_pair, :count => cluster.last, :geohash => cluster.first }
     end
     
     coordinates_with_counts
