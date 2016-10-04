@@ -21,5 +21,11 @@ describe Geocluster do
       clusters = Geocluster.cluster_coordinates([[52.5200065, 13.404954], [52.5094156, 13.4533962], [52.3941887, 13.072691]], :precision => 4, :limit => 1) # Berlin, Berlin-Kreuzberg, Potsdam
       clusters.should eq [{:coordinates => [52.50941559999999, 13.453396199999998], :count => 2, :geohash => 'u33d'}] # Only one cluster because of limitation
     end
+    
+    specify 'Return hash with geohash as key' do
+      clusters = Geocluster.cluster_coordinates_hash([[52.5200065, 13.404954], [52.5094156, 13.4533962], [52.3941887, 13.072691]], :nucleus => false)
+      clusters.should eq({ :u33 => {:coordinates=>[52.3941887, 13.072691000000003], :count=>3, :geohash => 'u33'}})
+    end
+    
   end
 end

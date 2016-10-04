@@ -10,7 +10,59 @@ module Geocluster
   # limit and nucleus, returning an array of clusters and the
   # count of clustered coordinates for each, in the form of
   # [{ :coordinates => [lat,lon], :count => 3 }, { :coordinates => [lat,lon], :count => 2 }, ...]
-  # 
+  #
+  
+  def cluster_coordinates_hash(coordinates, options = {})
+    options = {
+      :precision => 3
+    }.merge!(options)
+    
+    geohashes = coordinates.map{ |c| GeoHash.encode(c.first, c.last, 24) }
+    
+    # Convert coordinates into geohashes to easily find neighboring coordinates
+    geohashes = coordinates.map{ |c| GeoHash.encode(c.first, c.last, 24) }
+    # ["u33dc0cpnnf4", "u281zd9xrtww", "u1hcy2ukdhpb", "u1hg6jsr0znd", "u33616p4rb8v", "u0vug9dwefde", "u0yjjd6jk0yv"] 
+
+    # Get stripped to first {precision} chars and unique
+    # coordinates; these are the keys for a temporary hash
+    cut_hashes = geohashes.map{ |h| h[0..options[:precision] - 1]}
+    keys = cut_hashes.uniq
+    # ["u33", "u28", "u1h", "u0v", "u0y"]
+
+    # Get occurences count for keys
+    values = keys.map{ |h| cut_hashes.count(h)}
+    # [2, 1, 2, 1, 1]
+
+    # Convert keys and values to hash which
+    # associates geo-clusters with coodinates count
+    clusters_hash = Hash[keys.zip(values)]
+    # {"u33"=>2, "u28"=>1, "u1h"=>2, "u0v"=>1, "u0y"=>1}
+
+    # Sort by count desc (turns clusters into an
+    # array); at this point, we have all clusters and
+    # the number of coodinates per cluster
+    clusters = clusters_hash.sort_by{ |key, value| value }.reverse
+    # [["u33", 2], ["u1h", 2], ["u0v", 1], ["u28", 1], ["u0y", 1]]
+    
+    coordinates_with_counts = {}
+    
+    clusters.each do |cluster|
+      # Select geohashes from cluster matching the first {precision} chars
+      select_hashes = geohashes.select{ |g| g[0..options[:precision] - 1] == cluster.first }
+      
+      # Get array of associations between select hash and no. of occurences of that select hash in cluster
+      select_hashes_with_counts = select_hashes.map{ |s| { "#{s}" => select_hashes.count(s) } }
+
+      # Get select hash with the most occurences in cluster and add to all top coordinates in clusters
+      # Calculating the geographic center is needed because Geohash.decode returns a geo-square
+      top_hash = select_hashes_with_counts.sort_by{ |hash| hash.values.first }.reverse.first.keys.first
+      coordinates_with_counts[cluster.first.to_sym] = { :coordinates => Geocoder::Calculations.geographic_center(GeoHash.decode(top_hash)), :count => cluster.last, :geohash => cluster.first }
+    end
+    
+    coordinates_with_counts
+    
+  end
+  
   def cluster_coordinates(coordinates, options = {})
     # Set default options
     options = {
